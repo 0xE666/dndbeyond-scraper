@@ -64,26 +64,34 @@ class dnd_character:
         return dex_mod + bonus
 
     def parse(self):
-        if "error" in self.data:
-            return self.data
+    if "error" in self.data:
+        return self.data
 
-        return {
-            "name": self.data["name"],
-            "level": sum(cls["level"] for cls in self.data.get("classes", [])),
-            "race": self.data["race"]["fullName"],
-            "class": [cls["definition"]["name"] for cls in self.data.get("classes", [])],
-            "hp": self.data.get("baseHitPoints", 0),
-            "ac": self.data.get("armorClass", 10),
-            "initiative": self._parse_initiative(),
-            "proficiency_bonus": self.data.get("proficiencyBonus", 2),
-            "stats": self._parse_stats(),
-            "saving_throws": self._parse_saving_throws(),
-            "skills": self._parse_skills(),
-            "attacks": self._parse_attacks(),
-            "spells": self._parse_spells(),
-            "inventory": self._parse_inventory(),
-            "features": self._parse_features()
-        }
+    # properly calculate hp
+    base_hp = self.data.get("baseHitPoints", 0)
+    bonus_hp = self.data.get("bonusHitPoints", 0)
+    override_hp = self.data.get("overrideHitPoints")
+    max_hp = override_hp if override_hp is not None else (base_hp + bonus_hp)
+    current_hp = max_hp - self.data.get("removedHitPoints", 0)
+
+    return {
+        "name": self.data["name"],
+        "level": sum(cls["level"] for cls in self.data.get("classes", [])),
+        "race": self.data["race"]["fullName"],
+        "class": [cls["definition"]["name"] for cls in self.data.get("classes", [])],
+        "hp": max_hp,
+        "current_hp": current_hp,
+        "ac": self.data.get("armorClass", 10),
+        "initiative": self._parse_initiative(),
+        "proficiency_bonus": self.data.get("proficiencyBonus", 2),
+        "stats": self._parse_stats(),
+        "saving_throws": self._parse_saving_throws(),
+        "skills": self._parse_skills(),
+        "attacks": self._parse_attacks(),
+        "spells": self._parse_spells(),
+        "inventory": self._parse_inventory(),
+        "features": self._parse_features()
+    }
 
     def _parse_stats(self):
         raw_stats = self.data.get("stats", [])
