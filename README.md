@@ -1,21 +1,26 @@
-# DND Beyond Scraper
+# d&d beyond scraper
 
-
-this scrapes character data from D&D Beyond by character id and returns clean, structured json for usage.
+scrapes full character data from d&d beyond by character id and returns clean, structured json.
 
 questions? discord: eric.cpp  
-i created this due to the lack of resources, if you want to improve or happen to make changes feel free to reach out i'll gladly merge
+i created this due to the lack of resources — if you improve or change anything feel free to reach out, i’ll gladly merge.
 
 ---
 
-## Features
+## features
 
-- fetches and parses live D&D Beyond characters
-- returns all stats, saves, attacks, spells, inventory, features
+- fetches and parses live d&d beyond characters
+- returns **all stats, saving throws, skills, initiative, hp, ac, attacks, spells, inventory, features**
+- pulls bonuses and proficiencies from all sources (class, race, feats, items, backgrounds)
+- handles expertise and skill bonuses correctly
+- avoids double-counting constitution in hp
+- strips html safely and normalizes text output
+- works with multiclass and multi-source spells
+- outputs clean json suitable for bots, apps, or exports
 
 ---
 
-## Installation
+## installation
 
 ```bash
 git clone https://github.com/yourusername/dndbeyond-scraper.git
@@ -24,9 +29,9 @@ pip install requests beautifulsoup4
 ```
 
 ```py
-from dnd_scraper import dnd_character
+from dnd_scraper import ddb_character  # adjust import if file named differently
 
-char = dnd_character("142137194")  # replace with your d&d beyond character id
+char = ddb_character("142137194")  # replace with your d&d beyond character id
 data = char.parse()
 
 print(data)
@@ -39,6 +44,7 @@ print(data)
   "race": "Half-Elf",
   "class": ["Wizard"],
   "hp": 20,
+  "current_hp": 18,
   "ac": 13,
   "initiative": 3,
   "proficiency_bonus": 2,
@@ -52,66 +58,61 @@ print(data)
   },
   "saving_throws": {
     "strength": -1,
-    "dexterity": 3,
-    "constitution": 2,
-    "intelligence": 5,
+    "dexterity": 5,
+    "constitution": 4,
+    "intelligence": 7,
     "wisdom": 0,
     "charisma": -1
   },
   "skills": {
-    "arcana": 8,
-    "history": 6,
+    "arcana": 7,
+    "history": 5,
     "investigation": 4,
     "sleight-of-hand": 5
   },
   "attacks": [
     {
-      "name": "Quarterstaff",
+      "name": "quarterstaff",
       "range": 5,
       "hit_bonus": 1,
       "damage": "1d6-1",
-      "damage_type": "Bludgeoning",
-      "notes": "Simple, Versatile, Topple"
-    },
-    {
-      "name": "Shocking Grasp",
-      "range": "Touch",
-      "hit_bonus": 6,
-      "damage": "1d8",
-      "notes": "V/S"
+      "damage_type": "bludgeoning",
+      "notes": "simple, versatile, topple"
     }
   ],
   "spells": [
     {
-      "name": "Magic Missile",
+      "name": "magic missile",
       "level": 1,
-      "school": "Evocation",
+      "school": "evocation",
       "range": 120,
       "time": 1,
       "damage": "1d4+1",
-      "save_dc": 4,
+      "save_dc": 13,
       "attack_bonus": 5,
-      "description": "You create three glowing darts of magical force...",
-      "components": "V/S"
+      "description": "you create three glowing darts of magical force...",
+      "components": "v/s",
+      "source_class": "wizard"
     }
   ],
   "inventory": [
     {
-      "name": "Potion of Healing",
-      "type": "Potion",
+      "name": "potion of healing",
+      "type": "potion",
       "quantity": 1,
       "equipped": false,
       "damage": null,
       "properties": [],
-      "description": "You regain 2d4+2 hit points when you drink this potion..."
+      "description": "you regain 2d4+2 hit points when you drink this potion..."
     }
   ],
   "features": [
     {
-      "name": "Fey Ancestry",
-      "description": "You have advantage on saving throws against being charmed, and magic can’t put you to sleep."
+      "name": "fey ancestry",
+      "description": "you have advantage on saving throws against being charmed, and magic can’t put you to sleep."
     }
   ]
 }
 ```
+
 
