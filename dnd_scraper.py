@@ -46,7 +46,7 @@ class dnd_character:
                 time.sleep(0.6 + 0.6*(attempt-1) + random.uniform(0,0.2))
         return {"error":"unknown fetch error","character_id":self.character_id}
 
-    # -------- helpers
+
     def _mods(self):
         m = self.data.get("modifiers",{}) or {}
         out = []
@@ -56,7 +56,6 @@ class dnd_character:
         return out
 
     def _prof_bonus(self):
-        # trust ddb if present, else derive from level
         pb = self.data.get("proficiencyBonus")
         if isinstance(pb,int): return pb
         lvl = sum(c.get("level",0) for c in self.data.get("classes",[]))
@@ -89,7 +88,6 @@ class dnd_character:
 
     def _abil_mod(self, score): return (score-10)//2
 
-    # -------- public api
     def parse(self):
         if isinstance(self.data,dict) and "error" in self.data: return self.data
 
@@ -97,8 +95,6 @@ class dnd_character:
         race_name = (self.data.get("race") or {}).get("fullName") or (self.data.get("race") or {}).get("name","unknown")
         level = sum(c.get("level",0) for c in self.data.get("classes",[]))
         classes = [ (c.get("definition") or {}).get("name","unknown") for c in self.data.get("classes",[]) ]
-
-        # hp: never double-count con; never coerce 0 → max
         base_hp = int(self.data.get("baseHitPoints") or 0)
         bonus_hp = int(self.data.get("bonusHitPoints") or 0)
         override_hp = self.data.get("overrideHitPoints")
@@ -119,7 +115,7 @@ class dnd_character:
         saving_throws = {}
         prof_saves = { (m.get("subType") or "").replace("-saving-throws","")
                        for m in self._mods() if m.get("type")=="proficiency" and "saving-throws" in (m.get("subType") or "") }
-        save_bonuses = {}  # explicit bonuses to saves
+        save_bonuses = {}
         for m in self._mods():
             if m.get("type")=="bonus" and (m.get("subType") or "").endswith("-saving-throws"):
                 abil = m["subType"].replace("-saving-throws",""); 
@@ -158,7 +154,6 @@ class dnd_character:
             attacks.append({"name":a.get("name"),"range":a.get("range"),
                             "hit_bonus":a.get("toHitBonus"),"damage":dmg,"notes":_clean(a.get("notes",""))})
 
-        # spells grouped by class (from classSpells)
         spells = []
         class_by_id = { c.get("id"): c for c in self.data.get("classes",[]) }
         for entry in self.data.get("classSpells",[]) or []:
@@ -224,5 +219,6 @@ class dnd_character:
             "inventory": inventory,
             "features": features
         }
+
 
 
